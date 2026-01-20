@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+  NOTIFIED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  passwordHash  String
+  role          Role
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  teacher       Teacher?
+  sessions      Session[]
+}
+
+model Teacher {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String
+  sections  Section[]
+  classes   Class[]
+  students  Student[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Section {
+  id        String   @id @default(cuid())
+  teacherId String
+  name      String
+  createdAt DateTime @default(now())
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  classes   Class[]
+}
+
+model Class {
+  id              String   @id @default(cuid())
+  teacherId       String
+  sectionId       String
+  name            String
+  rows            Int      @default(4)
+  columns         Int      @default(6)
+  lambda          Float    @default(0.35)
+  excludeAbsent   Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  teacher         Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  section         Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  students        Student[]
+  seats           SeatAssignment[]
+  attendance      AttendanceRecord[]
+  recitations     RecitationEvent[]
+}
+
+/// Students belong to a class to keep roster ownership simple per class session.
+model Student {
+  id            String   @id @default(cuid())
+  teacherId     String
+  classId       String
+  firstName     String
+  lastName      String
+  nickname      String?
+  studentId     String
+  contactNumber String?
+  photoUrl      String?
+  createdAt     DateTime @default(now())
+  teacher       Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  class         Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  attendance    AttendanceRecord[]
+  recitations   RecitationEvent[]
+  seats         SeatAssignment[]
+
+  @@unique([teacherId, studentId])
+}
+
+model SeatAssignment {
+  id        String  @id @default(cuid())
+  classId   String
+  studentId String
+  row       Int
+  column    Int
+  class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, row, column])
+  @@unique([classId, studentId])
+}
+
+model AttendanceRecord {
+  id        String            @id @default(cuid())
+  classId   String
+  studentId String
+  date      DateTime
+  status    AttendanceStatus
+  createdAt DateTime          @default(now())
+  class     Class             @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId, date])
+}
+
+model RecitationEvent {
+  id        String   @id @default(cuid())
+  classId   String
+  studentId String
+  date      DateTime
+  createdAt DateTime @default(now())
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model AppSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @default(now()) @updatedAt
+}
