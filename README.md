@@ -103,22 +103,39 @@ nano .env
 ```
 Set `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
 
-### 7) Build and Run with Docker Compose
+### 7) Set Up the Database on Lightsail
+This deployment uses the PostgreSQL container from `docker-compose.yml`.
+1. Start the database service (creates the `mystar_db` Docker volume):
+   ```bash
+   docker compose up -d db
+   ```
+2. Verify the database is healthy:
+   ```bash
+   docker compose ps
+   ```
+3. (Optional) Connect to PostgreSQL for troubleshooting:
+   ```bash
+   docker compose exec db psql -U mystar -d mystar
+   ```
+4. Keep your `.env` aligned with the compose database credentials:
+   - Example: `DATABASE_URL=postgresql://mystar:mystar@db:5432/mystar`
+
+### 8) Build and Run with Docker Compose
 ```bash
 docker compose up -d --build
 ```
 
-### 8) Run Migrations + Seed Admin
+### 9) Run Migrations + Seed Admin
 ```bash
 docker compose exec web npx prisma migrate deploy
 docker compose exec web npm run seed
 ```
 
-### 9) Basic HTTP Deployment (Quick)
+### 10) Basic HTTP Deployment (Quick)
 - Access the app via `http://<your-lightsail-ip>:3000`.
 - If you want it on port 80, set up a reverse proxy (recommended below).
 
-### 10) HTTPS Deployment (Recommended)
+### 11) HTTPS Deployment (Recommended)
 **Option A: Nginx + Let's Encrypt**
 1. Install Nginx and Certbot:
    ```bash
@@ -154,7 +171,7 @@ docker compose exec web npm run seed
    sudo certbot --nginx -d yourdomain.com
    ```
 
-### 11) Connect a Domain
+### 12) Connect a Domain
 1. In Lightsail, create a **Static IP** and attach it to your instance.
 2. Create a **DNS Zone** in Lightsail for your domain.
 3. Point your domain registrar to Lightsail name servers.
