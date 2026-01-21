@@ -106,7 +106,6 @@ cp .env.example .env
 nano .env
 ```
 Set `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
-- This `.env` file lives in the project root (the `mystar` folder you cloned) next to `package.json`.
 - You can see the required variable names in `.env.example` (open it with `cat .env.example`).
 - Example database URL for the Docker database in this repo:
   `DATABASE_URL=postgresql://mystar:mystar@db:5432/mystar`
