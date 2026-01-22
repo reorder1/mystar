@@ -106,7 +106,6 @@ cp .env.example .env
 nano .env
 ```
 Set `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
-- This `.env` file lives in the project root (the `mystar` folder you cloned) next to `package.json`.
 - You can see the required variable names in `.env.example` (open it with `cat .env.example`).
 - Example database URL for the Docker database in this repo:
   `DATABASE_URL=postgresql://mystar:mystar@db:5432/mystar`
@@ -145,19 +144,6 @@ docker compose exec web npx prisma migrate deploy
 docker compose exec web npm run seed
 ```
 If you see errors, re-check your `DATABASE_URL` in `.env` and confirm the `db` container is running.
-If you see `service "web" is not running`, make sure the web container is up:
-```bash
-docker compose ps
-docker compose up -d --build
-docker compose logs --tail=100 web
-```
-If `docker compose up -d --build` fails with `npm run build` exit code `1`, check the build output for the exact error and verify prerequisites:
-```bash
-docker compose logs --tail=200 web
-docker compose exec web node -v
-docker compose exec web npm -v
-```
-- Confirm your `.env` values are present and valid (missing env vars can break the Next.js build).
 
 ### 10) Basic HTTP Deployment (Quick)
 - Access the app via `http://<your-lightsail-ip>:3000`.
